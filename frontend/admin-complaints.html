@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Complaints | Complaint Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ===== NAVBAR ===== -->
+  <nav class="navbar">
+    <div class="navbar-brand">📋 ComplaintMS <span class="admin-tag">Admin</span></div>
+    <div class="navbar-links">
+      <a href="admin-dashboard.html" class="btn btn-secondary btn-sm">← Overview</a>
+      <a href="#" class="btn btn-secondary btn-sm" onclick="logout(); return false;">Logout</a>
+    </div>
+  </nav>
+
+  <div class="dashboard-container">
+
+    <div class="dashboard-header">
+      <div>
+        <h1>Manage Complaints</h1>
+        <p class="subtitle">Search, filter, and update complaints</p>
+      </div>
+    </div>
+
+    <!-- ===== FILTER BAR ===== -->
+    <div class="filter-bar">
+      <input type="text" id="searchInput" placeholder="Search by title, category, assignee..." class="filter-input">
+
+      <select id="statusFilter" class="filter-select">
+        <option value="">All Statuses</option>
+        <option value="Pending">Pending</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Resolved">Resolved</option>
+        <option value="Closed">Closed</option>
+      </select>
+
+      <select id="priorityFilter" class="filter-select">
+        <option value="">All Priorities</option>
+        <option value="Critical">Critical</option>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+      </select>
+
+      <select id="escalatedFilter" class="filter-select">
+        <option value="">All Escalations</option>
+        <option value="yes">Escalated</option>
+        <option value="no">Not Escalated</option>
+      </select>
+
+      <select id="sortOrder" class="filter-select">
+        <option value="newest">Newest First</option>
+        <option value="oldest">Oldest First</option>
+      </select>
+    </div>
+
+    <!-- ===== RESULTS COUNT ===== -->
+    <p class="results-count" id="resultsCount"></p>
+
+    <!-- ===== TABLE ===== -->
+    <div class="table-wrapper">
+      <table class="complaints-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>SLA</th>
+            <th>Assigned</th>
+            <th>Date</th>
+            <th>View</th>
+            <th>Quick Actions</th>
+          </tr>
+        </thead>
+        <tbody id="complaintsTableBody">
+          <!-- Rows rendered by JS -->
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script src="js/admin-complaints.js"></script>
+</body>
+</html>

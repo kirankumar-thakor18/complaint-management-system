@@ -1,0 +1,1 @@
+console.log("Complaint Management System - Frontend Loaded ✅");

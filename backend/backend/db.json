@@ -1,0 +1,49 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Admin",
+      "email": "admin@college.edu",
+      "password": "$2b$10$ircBw5pxxKewmYyYVXfyZuW7qJTMOOnaHULqKMq2/JzNdScim.a/6",
+      "role": "admin",
+      "createdAt": "2026-09-02T16:01:26.662Z"
+    },
+    {
+      "id": 2,
+      "name": "Kirankumar Thakor",
+      "email": "itskiranthakor@gmail.com",
+      "password": "$2b$10$.uszvKphwiuHaFc6uelS8OcorXfctbXz.K1.U8rpnFBJRjhkSac/W",
+      "role": "user",
+      "createdAt": "2026-09-02T16:10:26.132Z"
+    }
+  ],
+  "complaints": [
+    {
+      "id": 1,
+      "title": "kknbhgnb",
+      "category": "IT/Network",
+      "description": "ggftfjhgtfthgghgg",
+      "suggestedPriority": "Low",
+      "priority": "Low",
+      "status": "Pending",
+      "userId": 2,
+      "assignedTo": null,
+      "slaDeadline": "2026-09-05T16:10:26.132Z",
+      "escalated": false,
+      "createdAt": "2026-09-02T16:10:26.132Z",
+      "updatedAt": "2026-09-02T16:10:26.132Z",
+      "resolvedAt": null,
+      "history": [
+        {
+          "action": "created",
+          "previousValue": null,
+          "newValue": "Pending",
+          "performedBy": { "id": 2, "name": "Kirankumar Thakor", "role": "user" },
+          "comment": "Complaint submitted.",
+          "timestamp": "2026-09-02T16:10:26.132Z"
+        }
+      ]
+    }
+  ],
+  "feedback": []
+}

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | Complaint Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ===== NAVBAR ===== -->
+  <nav class="navbar">
+    <div class="navbar-brand">📋 ComplaintMS</div>
+    <div class="navbar-links">
+      <span class="navbar-user">Hi, <strong id="userName">User</strong></span>
+      <a href="#" class="btn btn-secondary btn-sm" onclick="logout(); return false;">Logout</a>
+    </div>
+  </nav>
+
+  <div class="dashboard-container">
+
+    <!-- ===== HEADER ===== -->
+    <div class="dashboard-header">
+      <div>
+        <h1>My Dashboard</h1>
+        <p class="subtitle">Track all your complaints in one place</p>
+      </div>
+      <a href="submit-complaint.html" class="btn btn-primary">+ New Complaint</a>
+    </div>
+
+    <!-- ===== STATS CARDS ===== -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-icon">📄</span>
+        <div>
+          <p class="stat-value" id="totalCount">0</p>
+          <p class="stat-label">Total Complaints</p>
+        </div>
+      </div>
+
+      <div class="stat-card stat-pending">
+        <span class="stat-icon">⏳</span>
+        <div>
+          <p class="stat-value" id="pendingCount">0</p>
+          <p class="stat-label">Pending</p>
+        </div>
+      </div>
+
+      <div class="stat-card stat-progress">
+        <span class="stat-icon">🔄</span>
+        <div>
+          <p class="stat-value" id="progressCount">0</p>
+          <p class="stat-label">In Progress</p>
+        </div>
+      </div>
+
+      <div class="stat-card stat-resolved">
+        <span class="stat-icon">✅</span>
+        <div>
+          <p class="stat-value" id="resolvedCount">0</p>
+          <p class="stat-label">Resolved</p>
+        </div>
+      </div>
+
+      <div class="stat-card stat-escalated">
+        <span class="stat-icon">🚨</span>
+        <div>
+          <p class="stat-value" id="escalatedCount">0</p>
+          <p class="stat-label">Escalated</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== COMPLAINTS LIST ===== -->
+    <div class="section-header">
+      <h2>My Complaints</h2>
+    </div>
+
+    <div class="complaints-list" id="complaintsList">
+      <!-- Complaint cards will be rendered here by JS -->
+    </div>
+
+  </div>
+
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

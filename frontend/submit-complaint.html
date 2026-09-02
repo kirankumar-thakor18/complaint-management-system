@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Submit Complaint | Complaint Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ===== NAVBAR ===== -->
+  <nav class="navbar">
+    <div class="navbar-brand">📋 ComplaintMS</div>
+    <div class="navbar-links">
+      <a href="dashboard.html" class="btn btn-secondary btn-sm">← Back to Dashboard</a>
+    </div>
+  </nav>
+
+  <div class="dashboard-container">
+    <div class="form-page-header">
+      <h1>Submit a New Complaint</h1>
+      <p class="subtitle">Fill the form below — we'll detect the priority automatically</p>
+    </div>
+
+    <div class="form-card">
+      <form id="complaintForm" novalidate>
+
+        <div class="form-group">
+          <label for="title">Complaint Title</label>
+          <input type="text" id="title" name="title" placeholder="e.g. Hostel Wi-Fi not working" required>
+          <span class="error-msg" id="titleError"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="category">Category</label>
+          <select id="category" name="category" required>
+            <option value="">-- Select Category --</option>
+            <option value="Electrical">Electrical</option>
+            <option value="IT/Network">IT/Network</option>
+            <option value="Maintenance">Maintenance</option>
+            <option value="Food/Mess">Food/Mess</option>
+            <option value="Security">Security</option>
+            <option value="Sanitation">Sanitation</option>
+            <option value="Other">Other</option>
+          </select>
+          <span class="error-msg" id="categoryError"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea id="description" name="description" rows="5" placeholder="Describe your complaint in detail..." required></textarea>
+          <span class="error-msg" id="descriptionError"></span>
+        </div>
+
+        <!-- ===== SMART PRIORITY PREVIEW ===== -->
+        <div class="priority-preview">
+          <p class="priority-preview-label">🔍 Detected Priority (automatic):</p>
+          <span class="badge-outline priority-badge" id="priorityPreview">Fill form to see priority</span>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full">Submit Complaint</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/toast.js"></script>
+  <script src="js/complaint-form.js"></script>
+</body>
+</html>
