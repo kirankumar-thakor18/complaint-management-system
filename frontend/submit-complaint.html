@@ -13,6 +13,8 @@
     <div class="navbar-brand">📋 ComplaintMS</div>
     <div class="navbar-links">
       <a href="dashboard.html" class="btn btn-secondary btn-sm">← Back to Dashboard</a>
+      <a href="profile.html" class="btn btn-secondary btn-sm">Profile</a>
+      <a href="#" class="btn btn-secondary btn-sm" onclick="logout(); return false;">Logout</a>
     </div>
   </nav>
 
@@ -57,6 +59,8 @@
           <p class="priority-preview-label">🔍 Detected Priority (automatic):</p>
           <span class="badge-outline priority-badge" id="priorityPreview">Fill form to see priority</span>
         </div>
+
+        <div id="duplicateWarning"></div>
 
         <button type="submit" class="btn btn-primary btn-full">Submit Complaint</button>
       </form>

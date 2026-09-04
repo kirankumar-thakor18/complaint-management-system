@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Users | Complaint Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-brand">📋 ComplaintMS <span class="admin-tag">Admin</span></div>
+    <div class="navbar-links">
+      <span class="navbar-user">Hi, <strong id="adminName">Admin</strong></span>
+      <a href="admin-dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>
+      <a href="admin-complaints.html" class="btn btn-secondary btn-sm">Manage</a>
+      <a href="#" class="btn btn-secondary btn-sm" onclick="logout(); return false;">Logout</a>
+    </div>
+  </nav>
+
+  <div class="dashboard-container">
+    <div class="dashboard-header">
+      <div>
+        <h1>Manage Users</h1>
+        <p class="subtitle">Enable, disable, promote or delete user accounts</p>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Complaints</th>
+            <th>Joined</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="usersTableBody">
+          <tr><td colspan="7" class="empty-state">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="js/toast.js"></script>
+  <script src="js/admin-users.js"></script>
+</body>
+</html>

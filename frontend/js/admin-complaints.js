@@ -7,6 +7,9 @@ const statusFilter = document.getElementById("statusFilter");
 const priorityFilter = document.getElementById("priorityFilter");
 const escalatedFilter = document.getElementById("escalatedFilter");
 const sortOrder = document.getElementById("sortOrder");
+const fromDate = document.getElementById("fromDate");
+const toDate = document.getElementById("toDate");
+const exportCsvBtn = document.getElementById("exportCsvBtn");
 const tableBody = document.getElementById("complaintsTableBody");
 const resultsCount = document.getElementById("resultsCount");
 
@@ -27,6 +30,14 @@ function applyFiltersAndRender() {
   if (escalatedFilter.value) {
     const wantEsc = escalatedFilter.value === "yes";
     result = result.filter(c => c.escalated === wantEsc);
+  }
+  if (fromDate.value) {
+    const from = new Date(fromDate.value).getTime();
+    result = result.filter(c => new Date(c.createdAt).getTime() >= from);
+  }
+  if (toDate.value) {
+    const to = new Date(toDate.value).getTime() + 24 * 60 * 60 * 1000;
+    result = result.filter(c => new Date(c.createdAt).getTime() <= to);
   }
 
   result.sort((a, b) => {
@@ -302,6 +313,35 @@ statusFilter.addEventListener("change", applyFiltersAndRender);
 priorityFilter.addEventListener("change", applyFiltersAndRender);
 escalatedFilter.addEventListener("change", applyFiltersAndRender);
 sortOrder.addEventListener("change", applyFiltersAndRender);
+fromDate.addEventListener("change", applyFiltersAndRender);
+toDate.addEventListener("change", applyFiltersAndRender);
+
+exportCsvBtn.addEventListener("click", exportCsv);
+
+function exportCsv() {
+  if (allComplaints.length === 0) { showToast("No complaints to export", "error"); return; }
+  const ownerNames = {};
+  const sorted = [...allComplaints].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const headers = ["ID", "Title", "Category", "Priority", "Status", "Escalated", "Assigned To", "Created At"];
+  const rows = sorted.map((c) => [
+    c.id, c.title, c.category, c.priority, c.status,
+    c.escalated ? "Yes" : "No",
+    c.assignedTo || "Unassigned",
+    new Date(c.createdAt).toLocaleString(),
+  ]);
+  const csv = [headers, ...rows].map((r) => r.map((v) => {
+    const s = String(v ?? "");
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  }).join(",")).join("\n");
+  const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "complaints.csv";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  showToast("CSV downloaded", "success");
+}
 
 // ===== INITIALIZE =====
 loadComplaints();

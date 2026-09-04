@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile | Complaint Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-brand">📋 ComplaintMS</div>
+    <div class="navbar-links">
+      <span class="navbar-user">Hi, <strong id="userName">User</strong></span>
+      <a href="dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>
+      <a href="#" class="btn btn-secondary btn-sm" onclick="logout(); return false;">Logout</a>
+    </div>
+  </nav>
+
+  <div class="dashboard-container">
+    <div class="dashboard-header">
+      <div>
+        <h1>My Profile</h1>
+        <p class="subtitle">View and update your account details</p>
+      </div>
+    </div>
+
+    <div class="profile-grid">
+      <div class="form-card">
+        <h3 style="margin-bottom:20px;">Account Information</h3>
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" id="profileName" name="profileName">
+          <span class="error-msg" id="nameError"></span>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="profileEmail" disabled>
+        </div>
+        <div class="form-group">
+          <label>Role</label>
+          <input type="text" id="profileRole" disabled>
+        </div>
+        <div class="form-group">
+          <label>Member Since</label>
+          <input type="text" id="profileCreated" disabled>
+        </div>
+        <button class="btn btn-primary" id="saveProfileBtn">Save Changes</button>
+      </div>
+
+      <div class="form-card">
+        <h3 style="margin-bottom:20px;">Change Password</h3>
+        <div class="form-group">
+          <label>Current Password</label>
+          <input type="password" id="currentPassword">
+          <span class="error-msg" id="currentPasswordError"></span>
+        </div>
+        <div class="form-group">
+          <label>New Password</label>
+          <input type="password" id="newPassword">
+          <span class="error-msg" id="newPasswordError"></span>
+        </div>
+        <div class="form-group">
+          <label>Confirm New Password</label>
+          <input type="password" id="confirmNewPassword">
+          <span class="error-msg" id="confirmNewPasswordError"></span>
+        </div>
+        <button class="btn btn-secondary" id="changePasswordBtn">Update Password</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/toast.js"></script>
+  <script src="js/profile.js"></script>
+</body>
+</html>

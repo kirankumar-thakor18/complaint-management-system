@@ -9,6 +9,7 @@ const crypto = require("crypto");
 const { suggestPriority, PRIORITIES } = require("./services/priorityService");
 const slaService = require("./services/slaService");
 const { addHistory } = require("./services/historyService");
+const emailService = require("./services/emailService");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -38,6 +39,7 @@ function nextId(arr) {
 
 // ===== AUTH MIDDLEWARE =====
 const tokens = {}; // token -> userId
+const resetTokens = {}; // resetToken -> { userId, expiresAt }
 
 function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -208,6 +210,10 @@ app.post("/api/auth/login", async (req, res) => {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
+    if (user.disabled) {
+      return res.status(403).json({ error: "This account has been disabled by an administrator" });
+    }
+
     const token = crypto.randomBytes(32).toString("hex");
     tokens[token] = user.id;
 
@@ -235,6 +241,129 @@ app.post("/api/auth/logout", authMiddleware, (req, res) => {
   res.json({ message: "Logged out" });
 });
 
+// GET /api/auth/profile - get full profile info
+app.get("/api/auth/profile", authMiddleware, loadUser, (req, res) => {
+  res.json({
+    id: req.user.id,
+    name: req.user.name,
+    email: req.user.email,
+    role: req.user.role,
+    createdAt: req.user.createdAt,
+  });
+});
+
+// PUT /api/auth/profile - update display name
+app.put("/api/auth/profile", authMiddleware, loadUser, (req, res) => {
+  try {
+    const db = req.db;
+    const { name } = req.body;
+    if (!name || name.trim().length < 3) {
+      return res.status(400).json({ error: "Name must be at least 3 characters" });
+    }
+    req.user.name = name.trim();
+    writeDB(db);
+    res.json({ message: "Profile updated", user: { id: req.user.id, name: req.user.name, email: req.user.email, role: req.user.role } });
+  } catch (err) {
+    console.error("Update profile error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// PUT /api/auth/password - change password (authenticated)
+app.put("/api/auth/password", authMiddleware, loadUser, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: "Current and new password are required" });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: "New password must be at least 6 characters" });
+    }
+    const isMatch = await bcrypt.compare(currentPassword, req.user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: "Current password is incorrect" });
+    }
+    req.user.password = await bcrypt.hash(newPassword, 10);
+    writeDB(req.db);
+    res.json({ message: "Password changed successfully" });
+  } catch (err) {
+    console.error("Change password error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// POST /api/auth/forgot-password - send reset link via email
+app.post("/api/auth/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+    const db = readDB();
+    const user = email ? db.users.find((u) => u.email === email.toLowerCase()) : null;
+
+    // Always respond the same to avoid leaking which emails exist.
+    if (!user) {
+      return res.json({ message: "If that email is registered, a reset link has been sent." });
+    }
+
+    const token = crypto.randomBytes(32).toString("hex");
+    const expiresAt = Date.now() + 30 * 60 * 1000; // 30 minutes
+    resetTokens[token] = { userId: user.id, expiresAt };
+
+    const resetLink = `${emailService.APP_URL}/reset-password.html?token=${token}`;
+    const body = emailService.wrap(`
+      <p>Hi <strong>${escapeHtmlText(user.name)}</strong>,</p>
+      <p>We received a request to reset your password. Click the button below to choose a new one. This link is valid for <strong>30 minutes</strong>.</p>
+      <p style="text-align:center;margin:24px 0;">
+        <a href="${resetLink}" style="background:#2563eb;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">Reset Password</a>
+      </p>
+      <p>If you did not request this, you can safely ignore this email.</p>
+    `);
+
+    await emailService.sendEmail(user.email, "Reset your password", body);
+
+    // In development (no SMTP configured) the email is only logged, so also
+    // return the link in the response to make local testing easy.
+    const extra = emailService.isConfigured() ? {} : { devResetLink: resetLink };
+    res.json({ message: "If that email is registered, a reset link has been sent.", ...extra });
+  } catch (err) {
+    console.error("Forgot password error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// POST /api/auth/reset-password - set new password with a reset token
+app.post("/api/auth/reset-password", async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: "Token and new password are required" });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: "Password must be at least 6 characters" });
+    }
+    const entry = resetTokens[token];
+    if (!entry || Date.now() > entry.expiresAt) {
+      return res.status(400).json({ error: "Reset link is invalid or has expired" });
+    }
+    const db = readDB();
+    const user = db.users.find((u) => u.id === entry.userId);
+    if (!user) {
+      return res.status(400).json({ error: "User no longer exists" });
+    }
+    user.password = await bcrypt.hash(newPassword, 10);
+    delete resetTokens[token];
+    writeDB(db);
+    res.json({ message: "Password reset successfully. You can now login." });
+  } catch (err) {
+    console.error("Reset password error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// Simple HTML escaping helper for email templates.
+function escapeHtmlText(str) {
+  return String(str || "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
+}
+
 // ===== COMPLAINT ROUTES =====
 
 // POST /api/complaints - create complaint
@@ -259,6 +388,23 @@ app.post("/api/complaints", authMiddleware, loadUser, (req, res) => {
     const now = new Date();
     const suggestedPriority = suggestPriority(title, category, description);
     const slaDeadline = slaService.computeSlaDeadline(suggestedPriority, now.toISOString());
+
+    // Duplicate detection: find similar complaints already submitted by this user.
+    const combined = `${title.trim()} ${description.trim()}`.toLowerCase();
+    const duplicates = db.complaints
+      .filter((c) => c.userId === req.userId)
+      .map((c) => ({ c, hay: `${c.title} ${c.description}`.toLowerCase() }))
+      .filter(({ c, hay }) => {
+        if (combined === hay) return true;
+        const words = combined.split(/\s+/).filter((w) => w.length > 3);
+        let overlap = 0;
+        words.forEach((w) => {
+          if (hay.includes(w)) overlap++;
+        });
+        const ratio = words.length ? overlap / words.length : 0;
+        return ratio >= 0.7;
+      })
+      .map(({ c }) => ({ id: c.id, title: c.title, status: c.status, createdAt: c.createdAt }));
 
     const newComplaint = {
       id: nextId(db.complaints),
@@ -292,6 +438,7 @@ app.post("/api/complaints", authMiddleware, loadUser, (req, res) => {
       message: "Complaint created",
       complaint: newComplaint,
       suggestedPriority,
+      duplicates,
     });
   } catch (err) {
     console.error("Create complaint error:", err);
@@ -314,14 +461,41 @@ app.get("/api/complaints", authMiddleware, loadUser, (req, res) => {
   }
 });
 
-// GET /api/complaints/all - admin gets all complaints
+// GET /api/complaints/all - admin gets all complaints (supports filters)
 app.get("/api/complaints/all", authMiddleware, loadUser, adminMiddleware, (req, res) => {
   try {
     const db = req.db;
     const nowIso = new Date().toISOString();
     db.complaints.forEach((c) => refreshComplaintSla(c, db, nowIso));
     writeDB(db);
-    res.json({ complaints: db.complaints });
+
+    let result = db.complaints;
+    const filters = {};
+
+    if (req.query.status && STATUSES.includes(req.query.status)) {
+      result = result.filter((c) => c.status === req.query.status);
+      filters.status = req.query.status;
+    }
+    if (req.query.priority && PRIORITIES.includes(req.query.priority)) {
+      result = result.filter((c) => c.priority === req.query.priority);
+      filters.priority = req.query.priority;
+    }
+    if (req.query.from) {
+      const from = new Date(req.query.from).getTime();
+      if (!isNaN(from)) {
+        result = result.filter((c) => new Date(c.createdAt).getTime() >= from);
+        filters.from = req.query.from;
+      }
+    }
+    if (req.query.to) {
+      const to = new Date(req.query.to).getTime() + 24 * 60 * 60 * 1000; // inclusive of that day
+      if (!isNaN(to)) {
+        result = result.filter((c) => new Date(c.createdAt).getTime() <= to);
+        filters.to = req.query.to;
+      }
+    }
+
+    res.json({ complaints: result, filters, total: db.complaints.length });
   } catch (err) {
     console.error("Get all complaints error:", err);
     res.status(500).json({ error: "Server error" });
@@ -422,6 +596,22 @@ app.put("/api/admin/complaints/:id/status", authMiddleware, loadUser, adminMiddl
     }
 
     writeDB(db);
+
+    // Notify the complaint owner about the status change (fire-and-forget).
+    const owner = db.users.find((u) => u.id === complaint.userId);
+    if (owner && owner.role !== "admin") {
+      const body = emailService.wrap(`
+        <p>Hi <strong>${escapeHtmlText(owner.name)}</strong>,</p>
+        <p>Your complaint <strong>"${escapeHtmlText(complaint.title)}"</strong> has been updated.</p>
+        <p><strong>Status:</strong> <span style="color:#2563eb;font-weight:600;">${status}</span> <span style="color:#9ca3af;">(${oldStatus} → ${status})</span></p>
+        ${comment ? `<p><strong>Admin note:</strong> ${escapeHtmlText(comment)}</p>` : ""}
+        <p style="text-align:center;margin:24px 0;">
+          <a href="${emailService.APP_URL}/track-complaint.html?id=${complaint.id}" style="background:#2563eb;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">View Complaint</a>
+        </p>
+      `);
+      emailService.sendEmail(owner.email, `Complaint #${complaint.id} is now ${status}`, body);
+    }
+
     res.json({ message: "Status updated", complaint });
   } catch (err) {
     console.error("Update status error:", err);
@@ -639,6 +829,149 @@ app.get("/api/admin/analytics", authMiddleware, loadUser, adminMiddleware, (req,
     });
   } catch (err) {
     console.error("Analytics error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// ===== ADMIN USER MANAGEMENT =====
+
+// GET /api/admin/users - list all users (without password hashes)
+app.get("/api/admin/users", authMiddleware, loadUser, adminMiddleware, (req, res) => {
+  try {
+    const db = req.db;
+    const users = db.users.map((u) => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      role: u.role,
+      disabled: Boolean(u.disabled),
+      createdAt: u.createdAt,
+      complaintCount: db.complaints.filter((c) => c.userId === u.id).length,
+    }));
+    res.json({ users });
+  } catch (err) {
+    console.error("Get users error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// PUT /api/admin/users/:id/status - enable or disable a user account
+app.put("/api/admin/users/:id/status", authMiddleware, loadUser, adminMiddleware, (req, res) => {
+  try {
+    const db = req.db;
+    const id = parseInt(req.params.id, 10);
+    const user = db.users.find((u) => u.id === id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const { disabled } = req.body;
+    if (id === req.userId && disabled === true) {
+      return res.status(400).json({ error: "You cannot disable your own account" });
+    }
+    user.disabled = disabled ? true : false;
+    writeDB(db);
+    res.json({ message: "User status updated", user: { id: user.id, name: user.name, disabled: user.disabled } });
+  } catch (err) {
+    console.error("Update user status error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// PUT /api/admin/users/:id/role - promote/demote user role
+app.put("/api/admin/users/:id/role", authMiddleware, loadUser, adminMiddleware, (req, res) => {
+  try {
+    const db = req.db;
+    const id = parseInt(req.params.id, 10);
+    const user = db.users.find((u) => u.id === id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const { role } = req.body;
+    if (role !== "admin" && role !== "user") {
+      return res.status(400).json({ error: "Role must be 'admin' or 'user'" });
+    }
+    if (id === req.userId && role !== "admin") {
+      return res.status(400).json({ error: "You cannot demote your own admin account" });
+    }
+    // Prevent removing the last admin.
+    if (user.role === "admin" && role !== "admin") {
+      const adminCount = db.users.filter((u) => u.role === "admin").length;
+      if (adminCount <= 1) {
+        return res.status(400).json({ error: "Cannot remove the last admin account" });
+      }
+    }
+    user.role = role;
+    writeDB(db);
+    res.json({ message: "User role updated", user: { id: user.id, name: user.name, role: user.role } });
+  } catch (err) {
+    console.error("Update user role error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// DELETE /api/admin/users/:id - delete a user account
+app.delete("/api/admin/users/:id", authMiddleware, loadUser, adminMiddleware, (req, res) => {
+  try {
+    const db = req.db;
+    const id = parseInt(req.params.id, 10);
+    const user = db.users.find((u) => u.id === id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+    if (id === req.userId) return res.status(400).json({ error: "You cannot delete your own account" });
+    if (user.role === "admin") {
+      const adminCount = db.users.filter((u) => u.role === "admin").length;
+      if (adminCount <= 1) return res.status(400).json({ error: "Cannot delete the last admin account" });
+    }
+
+    // Detach the user's complaints so they don't become orphaned.
+    db.complaints.forEach((c) => {
+      if (c.userId === id) c.userId = null;
+    });
+    db.users = db.users.filter((u) => u.id !== id);
+    writeDB(db);
+    res.json({ message: "User deleted" });
+  } catch (err) {
+    console.error("Delete user error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// ===== REPORT EXPORT =====
+
+function escapeCsv(value) {
+  const s = value == null ? "" : String(value);
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+// GET /api/admin/export/csv - download all complaints as CSV
+app.get("/api/admin/export/csv", authMiddleware, loadUser, adminMiddleware, (req, res) => {
+  try {
+    const db = req.db;
+    const nowIso = new Date().toISOString();
+    db.complaints.forEach((c) => refreshComplaintSla(c, db, nowIso));
+    writeDB(db);
+
+    const headers = ["ID", "Title", "Category", "Priority", "Status", "Escalated", "User", "Assigned To", "SLA Deadline", "Created At", "Resolved At"];
+    const rows = db.complaints.map((c) => {
+      const owner = c.userId ? db.users.find((u) => u.id === c.userId) : null;
+      return [
+        c.id,
+        c.title,
+        c.category,
+        c.priority,
+        c.status,
+        c.escalated ? "Yes" : "No",
+        owner ? owner.name : "Deleted User",
+        c.assignedTo || "Unassigned",
+        c.slaDeadline ? new Date(c.slaDeadline).toLocaleString() : "",
+        new Date(c.createdAt).toLocaleString(),
+        c.resolvedAt ? new Date(c.resolvedAt).toLocaleString() : "",
+      ];
+    });
+    const csv = [headers, ...rows].map((r) => r.map(escapeCsv).join(",")).join("\n");
+
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", 'attachment; filename="complaints.csv"');
+    res.send(csv);
+  } catch (err) {
+    console.error("Export CSV error:", err);
     res.status(500).json({ error: "Server error" });
   }
 });

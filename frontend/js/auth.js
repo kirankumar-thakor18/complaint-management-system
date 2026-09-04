@@ -1,5 +1,36 @@
 const API_URL = "http://localhost:5000/api";
 
+// ===== LOGIN TAB SWITCH (User / Admin) =====
+let selectedTab = "user";
+
+const userTab = document.getElementById("userTab");
+const adminTab = document.getElementById("adminTab");
+const loginTitle = document.getElementById("loginTitle");
+const loginSubtitle = document.getElementById("loginSubtitle");
+const adminHint = document.getElementById("adminHint");
+
+function setLoginTab(tab) {
+  selectedTab = tab;
+  userTab.classList.toggle("active", tab === "user");
+  adminTab.classList.toggle("active", tab === "admin");
+  if (tab === "admin") {
+    loginTitle.textContent = "Admin Login";
+    loginSubtitle.textContent = "Login as an administrator";
+    adminHint.style.display = "block";
+    email.placeholder = "admin@example.com";
+  } else {
+    loginTitle.textContent = "User Login";
+    loginSubtitle.textContent = "Login to your account";
+    adminHint.style.display = "none";
+    email.placeholder = "you@example.com";
+  }
+  if (emailError.textContent) emailError.textContent = "";
+  if (passwordError.textContent) passwordError.textContent = "";
+}
+
+if (userTab) userTab.addEventListener("click", () => setLoginTab("user"));
+if (adminTab) adminTab.addEventListener("click", () => setLoginTab("admin"));
+
 // ===== LOGIN FORM VALIDATION =====
 const loginForm = document.getElementById("loginForm");
 
@@ -41,6 +72,14 @@ if (loginForm) {
 
         if (!res.ok) {
           showToast(data.error || "Login failed", "error");
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Login";
+          return;
+        }
+
+        // Admin tab: only an actual admin may log in here.
+        if (selectedTab === "admin" && data.user.role !== "admin") {
+          showToast("This account is not an admin. Please use the User tab.", "error");
           submitBtn.disabled = false;
           submitBtn.textContent = "Login";
           return;

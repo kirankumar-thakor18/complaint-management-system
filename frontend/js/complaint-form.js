@@ -5,6 +5,17 @@ const titleInput = document.getElementById("title");
 const categoryInput = document.getElementById("category");
 const descriptionInput = document.getElementById("description");
 const priorityPreview = document.getElementById("priorityPreview");
+const duplicateWarning = document.getElementById("duplicateWarning");
+
+function logout() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  window.location.href = "index.html";
+}
+
+function escapeHtml(str) {
+  return String(str || "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
+}
 
 const titleError = document.getElementById("titleError");
 const categoryError = document.getElementById("categoryError");
@@ -158,6 +169,19 @@ complaintForm.addEventListener("submit", function (e) {
       submitBtn.textContent = "Submit Complaint";
       complaintForm.reset();
       updatePriorityPreview();
+
+      if (duplicateWarning && Array.isArray(data.duplicates) && data.duplicates.length > 0) {
+        const links = data.duplicates
+          .map((d) => `<a href="track-complaint.html?id=${d.id}" class="duplicate-link">#${d.id} — ${escapeHtml(d.title)} (${d.status})</a>`)
+          .join("<br>");
+        duplicateWarning.innerHTML = `
+          <div class="duplicate-warning">
+            ⚠️ <strong>Similar complaint(s) found:</strong><br>${links}
+          </div>
+        `;
+      } else if (duplicateWarning) {
+        duplicateWarning.innerHTML = "";
+      }
     })
     .catch((err) => {
       console.error("Submit complaint error:", err);

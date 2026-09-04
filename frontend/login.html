@@ -10,8 +10,12 @@
 
   <div class="auth-container">
     <div class="auth-card">
-      <h2>Login</h2>
-      <p class="auth-subtitle">Login to your account</p>
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab active" id="userTab">👤 User</button>
+        <button type="button" class="auth-tab" id="adminTab">🛡️ Admin</button>
+      </div>
+      <h2 id="loginTitle">User Login</h2>
+      <p class="auth-subtitle" id="loginSubtitle">Login to your account</p>
 
       <form id="loginForm" novalidate>
         <div class="form-group">
@@ -26,10 +30,13 @@
           <span class="error-msg" id="passwordError"></span>
         </div>
 
+        <p class="admin-hint" id="adminHint" style="display:none;">Admin demo: admin@college.edu / admin123</p>
+
         <button type="submit" class="btn btn-primary btn-full">Login</button>
       </form>
 
       <p class="auth-switch">Don't have an account? <a href="register.html">Register</a></p>
+      <p class="auth-switch" style="margin-top:8px;"><a href="forgot-password.html">Forgot password?</a></p>
     </div>
   </div>
 

@@ -15,6 +15,14 @@
       "password": "$2b$10$.uszvKphwiuHaFc6uelS8OcorXfctbXz.K1.U8rpnFBJRjhkSac/W",
       "role": "user",
       "createdAt": "2026-09-02T16:10:26.132Z"
+    },
+    {
+      "id": 3,
+      "name": "Kiran",
+      "email": "kiran.space18k@gmail.com",
+      "password": "$2b$10$Cow8zktSYqbBq6/3kBm9beaeEHFUkKFkWJV1JyRah4XXxbb8jHngu",
+      "role": "user",
+      "createdAt": "2026-09-04T06:33:32.434Z"
     }
   ],
   "complaints": [
@@ -25,22 +33,128 @@
       "description": "ggftfjhgtfthgghgg",
       "suggestedPriority": "Low",
       "priority": "Low",
-      "status": "Pending",
+      "status": "In Progress",
       "userId": 2,
       "assignedTo": null,
       "slaDeadline": "2026-09-05T16:10:26.132Z",
       "escalated": false,
       "createdAt": "2026-09-02T16:10:26.132Z",
-      "updatedAt": "2026-09-02T16:10:26.132Z",
-      "resolvedAt": null,
+      "updatedAt": "2026-09-04T07:06:46.639Z",
+      "resolvedAt": "2026-09-04T07:06:32.967Z",
       "history": [
         {
           "action": "created",
           "previousValue": null,
           "newValue": "Pending",
-          "performedBy": { "id": 2, "name": "Kirankumar Thakor", "role": "user" },
+          "performedBy": {
+            "id": 2,
+            "name": "Kirankumar Thakor",
+            "role": "user"
+          },
           "comment": "Complaint submitted.",
           "timestamp": "2026-09-02T16:10:26.132Z"
+        },
+        {
+          "action": "status_changed",
+          "previousValue": "Pending",
+          "newValue": "In Progress",
+          "performedBy": {
+            "id": 1,
+            "name": "Admin",
+            "role": "admin"
+          },
+          "comment": null,
+          "timestamp": "2026-09-04T06:39:29.426Z"
+        },
+        {
+          "action": "status_changed",
+          "previousValue": "In Progress",
+          "newValue": "Resolved",
+          "performedBy": {
+            "id": 1,
+            "name": "Admin",
+            "role": "admin"
+          },
+          "comment": null,
+          "timestamp": "2026-09-04T07:06:32.967Z"
+        },
+        {
+          "action": "resolved",
+          "previousValue": null,
+          "newValue": "Resolved",
+          "performedBy": {
+            "id": 1,
+            "name": "Admin",
+            "role": "admin"
+          },
+          "comment": "Complaint resolved.",
+          "timestamp": "2026-09-04T07:06:32.967Z"
+        },
+        {
+          "action": "status_changed",
+          "previousValue": "Resolved",
+          "newValue": "In Progress",
+          "performedBy": {
+            "id": 1,
+            "name": "Admin",
+            "role": "admin"
+          },
+          "comment": "Restored during testing",
+          "timestamp": "2026-09-04T07:06:46.639Z"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "gdfgghgfbv",
+      "category": "Sanitation",
+      "description": "dgfb fg b c bvfd fffg",
+      "suggestedPriority": "Low",
+      "priority": "Low",
+      "status": "Resolved",
+      "userId": 2,
+      "assignedTo": null,
+      "slaDeadline": "2026-09-07T05:54:01.691Z",
+      "escalated": false,
+      "createdAt": "2026-09-04T05:54:01.691Z",
+      "updatedAt": "2026-09-04T06:39:25.845Z",
+      "resolvedAt": "2026-09-04T06:39:25.845Z",
+      "history": [
+        {
+          "action": "created",
+          "previousValue": null,
+          "newValue": "Pending",
+          "performedBy": {
+            "id": 2,
+            "name": "Kirankumar Thakor",
+            "role": "user"
+          },
+          "comment": "Complaint submitted.",
+          "timestamp": "2026-09-04T05:54:01.692Z"
+        },
+        {
+          "action": "status_changed",
+          "previousValue": "Pending",
+          "newValue": "Resolved",
+          "performedBy": {
+            "id": 1,
+            "name": "Admin",
+            "role": "admin"
+          },
+          "comment": null,
+          "timestamp": "2026-09-04T06:39:25.845Z"
+        },
+        {
+          "action": "resolved",
+          "previousValue": null,
+          "newValue": "Resolved",
+          "performedBy": {
+            "id": 1,
+            "name": "Admin",
+            "role": "admin"
+          },
+          "comment": "Complaint resolved.",
+          "timestamp": "2026-09-04T06:39:25.845Z"
         }
       ]
     }

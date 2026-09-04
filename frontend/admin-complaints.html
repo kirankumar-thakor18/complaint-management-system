@@ -13,6 +13,8 @@
     <div class="navbar-brand">📋 ComplaintMS <span class="admin-tag">Admin</span></div>
     <div class="navbar-links">
       <a href="admin-dashboard.html" class="btn btn-secondary btn-sm">← Overview</a>
+      <a href="admin-users.html" class="btn btn-secondary btn-sm">Users</a>
+      <a href="profile.html" class="btn btn-secondary btn-sm">Profile</a>
       <a href="#" class="btn btn-secondary btn-sm" onclick="logout(); return false;">Logout</a>
     </div>
   </nav>
@@ -56,6 +58,11 @@
         <option value="newest">Newest First</option>
         <option value="oldest">Oldest First</option>
       </select>
+
+      <input type="date" id="fromDate" class="filter-input" title="From date">
+      <input type="date" id="toDate" class="filter-input" title="To date">
+
+      <button class="btn btn-primary btn-sm" id="exportCsvBtn" title="Download complaint list as CSV">⬇ Export CSV</button>
     </div>
 
     <!-- ===== RESULTS COUNT ===== -->
@@ -85,6 +92,7 @@
 
   </div>
 
+  <script src="js/toast.js"></script>
   <script src="js/admin-complaints.js"></script>
 </body>
 </html>
