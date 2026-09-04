@@ -1,8 +1,41 @@
 # 📋 Complaint Management System
 
-A practical, portfolio-quality Complaint Management System built with **Node.js (Express)** and a **vanilla HTML/CSS/JS** frontend. It transforms a basic CRUD app into a professional system with smart priority detection, SLA-based escalation, complaint timelines, an admin analytics dashboard, and post-resolution feedback.
+<div align="center">
 
-> 🚫 This project is **rule-based**, not AI/ML. Smart priority detection uses a simple keyword/score system that is easy to read and modify.
+A full-stack, portfolio-quality **Complaint Management System** — rules-based intelligent priority detection, SLA-based escalation, audit timelines, analytics dashboard, email notifications, and admin user management.
+
+[![Node](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![Nodemailer](https://img.shields.io/badge/Nodemailer-30B980?style=for-the-badge&logo=npm&logoColor=white)](https://nodemailer.com/)
+[![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
+[![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
+[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+
+![Version](https://img.shields.io/badge/version-1.0.0-blue?style=flat-square)
+![Status](https://img.shields.io/badge/status-stable-brightgreen?style=flat-square)
+![License](https://img.shields.io/badge/license-MIT-orange?style=flat-square)
+![Database](https://img.shields.io/badge/database-JSON-lightgrey?style=flat-square)
+
+</div>
+
+---
+
+## 📸 Screenshots
+
+> Add screenshots here (`assets/screenshots/login.png`, `dashboard.png`, `admin-dashboard.png`) to showcase the UI.
+
+```
+assets/screenshots/
+├── login.png            # Login with User/Admin tabs
+├── user-dashboard.png   # User's complaint dashboard
+├── admin-dashboard.png  # Admin analytics dashboard
+├── track.png            # Complaint timeline & SLA view
+└── profile.png          # User profile / change password
+```
+
+---
+
+> 🚫 **Note:** This project is **rule-based**, not AI/ML. The "smart" priority detection uses a simple, easy-to-read keyword/score system — no external ML or AI services are used.
 
 ---
 
@@ -44,9 +77,36 @@ A practical, portfolio-quality Complaint Management System built with **Node.js 
 - **One** feedback per complaint per user (no spam)
 - Admins can view all feedback
 
+### 📧 Email Notifications
+- Automated email to the complaint owner on status updates
+- **Password reset** emails with a secure, time-limited (30 min) token link
+- Works out-of-the-box with a console fallback if no SMTP is configured (perfect for local dev)
+- Configurable via `.env` (SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS)
+
+### 👤 User Profile & Password
+- Profile page to view account details and update your display name
+- Change your password (current password verified first)
+- **Forgot password** flow: reset link sent by email, valid for 30 minutes
+
+### 🔐 Admin User Management
+- Admins can list every user with account info and complaint counts
+- **Enable / disable** accounts (disabled users cannot log in)
+- **Promote** a user to admin
+- **Delete** users (their complaints are detached, never deleted)
+- Safety guards: you can't disable/delete yourself or remove the **last remaining admin**
+
+### 🕵️ Duplicate Complaint Detection
+- On submission, similar complaints already raised by the same user are detected
+- Word-overlap based similarity (no external libraries)
+- A warning with links to the existing complaints is shown after submitting
+
+### 📅 Filtering & ▶️ CSV Export
+- Admin complaint table supports filtering by **status**, **priority**, escalation, and **date range (from / to)**
+- **Export CSV** button downloads the current complaint list, plus a backend export endpoint for automation
+
 ### 🔐 Roles
-- **User:** register, login, submit complaints, track status/timeline, see assigned dept/priority/escalation, give feedback
-- **Admin:** login, manage all complaints, search/filter, assign, change status, override priority, see history/SLA/analytics, view feedback
+- **User:** register, login, submit complaints, track status/timeline, see assigned dept/priority/escalation, give feedback, manage profile & password
+- **Admin:** login, manage all complaints, search/filter/export, assign, change status, override priority, manage users, see history/SLA/analytics, view feedback
 
 ---
 
@@ -61,12 +121,13 @@ complaint-management-system/
 │       ├── services/
 │       │   ├── priorityService.js    # Rule-based priority detection
 │       │   ├── slaService.js         # SLA deadline + escalation logic
-│       │   └── historyService.js     # Append-only history records
+│       │   ├── historyService.js     # Append-only history records
+│       │   └── emailService.js       # Nodemailer (SMTP) + dev console fallback
 │       ├── index.js                  # Express app, routes, auth, middleware
 │       ├── package.json
 │       └── db.json                   # Flat-file JSON database
 ├── frontend/
-│   ├── *.html                        # Landing, auth, dashboard, submit, track, admin
+│   ├── *.html                        # Landing, auth, dashboard, profile, admin pages
 │   ├── css/style.css                 # Single stylesheet (responsive)
 │   └── js/                           # Page-specific logic + helpers
 └── .gitignore
@@ -90,6 +151,18 @@ Create a `.env` file in `backend/backend/` (optional — defaults to port 5000):
 ```
 PORT=5000
 ```
+
+#### Email configuration (optional)
+By default, email notifications and password-reset links are **logged to the console** so the app works with zero setup in development. To send real emails, add your SMTP credentials to `.env`:
+
+```
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_app_password
+```
+
+> 💡 For Gmail, generate an **App Password** (Google Account → Security → App passwords) rather than using your normal login password.
 
 ### 3. Run the server
 ```bash
@@ -127,6 +200,12 @@ Register a user (or use the default admin) via the UI, submit a complaint, and o
 - After submitting, the **track page** shows status, priority, suggested priority, SLA deadline, escalation status, assigned department, and the full timeline
 - As **admin**, open **Manage Complaints** to assign, change status, override priority, and filter by escalation
 - Once a complaint is **resolved**, the owner can submit **feedback**
+- **Profile page** lets you update your name and change your password
+- **Manage Users** (admin) lets you enable/disable, promote, or delete users
+- Submitting a duplicate complaint warns you and links to the existing one
+- **Admin → Manage Complaints** supports status/priority/date-range filters plus a **CSV Export** button
+- Status updates trigger an **email notification** to the owner (console in dev mode)
+- **Forgot Password** on the login page emails a reset link (30-minute validity)
 
 **API smoke test (PowerShell):**
 ```powershell
@@ -147,22 +226,44 @@ Invoke-RestMethod -Uri http://localhost:5000/api/admin/analytics -Headers $h
 | POST   | `/api/auth/login`        | No   | Login                |
 | GET    | `/api/auth/me`           | Yes  | Current user         |
 | POST   | `/api/auth/logout`       | Yes  | Invalidate token     |
+| POST   | `/api/auth/forgot-password` | No | Send reset email (returns `devResetLink` in dev mode) |
+| POST   | `/api/auth/reset-password` | No | Set new password with a valid token |
+
+### Profile
+| Method | Endpoint                 | Auth | Description               |
+|--------|--------------------------|------|---------------------------|
+| GET    | `/api/auth/profile`      | Yes  | View account details      |
+| PUT    | `/api/auth/profile`      | Yes  | Update display name       |
+| PUT    | `/api/auth/password`     | Yes  | Change password           |
 
 ### Complaints
 | Method | Endpoint                        | Role   | Description                    |
 |--------|---------------------------------|--------|--------------------------------|
-| POST   | `/api/complaints`               | User   | Create (auto priority + SLA)   |
+| POST   | `/api/complaints`               | User   | Create (auto priority + SLA + duplicate check) |
 | GET    | `/api/complaints`               | User   | My complaints                  |
-| GET    | `/api/complaints/all`           | Admin  | All complaints                 |
+| GET    | `/api/complaints/all`           | Admin  | All complaints (query filters: `status`, `priority`, `escalated`, `from`, `to`) |
 | GET    | `/api/complaints/:id`           | Owner/Admin | Single complaint         |
 | GET    | `/api/complaints/:id/history`   | Owner/Admin | Timeline/audit history   |
 
 ### Admin Management
 | Method | Endpoint                              | Role  | Description            |
 |--------|---------------------------------------|-------|------------------------|
-| PUT    | `/api/admin/complaints/:id/status`    | Admin | Update status          |
+| PUT    | `/api/admin/complaints/:id/status`    | Admin | Update status (emails owner) |
 | PUT    | `/api/admin/complaints/:id/priority`  | Admin | Override priority      |
 | PUT    | `/api/admin/complaints/:id/assign`    | Admin | Assign to dept/person  |
+
+### Admin — User Management
+| Method | Endpoint                       | Role  | Description              |
+|--------|--------------------------------|-------|--------------------------|
+| GET    | `/api/admin/users`             | Admin | List users + complaints count |
+| PUT    | `/api/admin/users/:id/status`  | Admin | Enable / disable a user  |
+| PUT    | `/api/admin/users/:id/role`    | Admin | Promote user to admin    |
+| DELETE | `/api/admin/users/:id`         | Admin | Delete a user            |
+
+### Admin — Export
+| Method | Endpoint               | Role  | Description                        |
+|--------|------------------------|-------|------------------------------------|
+| GET    | `/api/admin/export/csv`| Admin | Download all complaints as CSV     |
 
 ### Feedback
 | Method | Endpoint                    | Role  | Description        |
@@ -188,6 +289,15 @@ Invoke-RestMethod -Uri http://localhost:5000/api/admin/analytics -Headers $h
 **History / Timeline:**
 `historyService.addHistory()` appends records to `complaint.history`. It only ever appends — never edits or removes — keeping a trustworthy audit trail.
 
+**Email Notifications & Password Reset:**
+`emailService.js` wraps Nodemailer with HTTPS-safe transport and a JSON payload. If SMTP is configured in `.env` it sends real email; otherwise it logs to the console (dev mode) and returns a `devResetLink`. Password-reset tokens are 64-char random hex, stored in-memory with a **30-minute expiry**, and are single-use.
+
+**Duplicate Detection:**
+`POST /api/complaints` compares the new complaint against the user's existing ones using word-overlap similarity (Jaccard-style). If similarity ≥ 0.7 it is flagged as a duplicate and returned so the UI can warn with links.
+
+**Filters & Export:**
+`GET /api/complaints/all` accepts `status`, `priority`, `escalated`, `from`, and `to` query params. `GET /api/admin/export/csv` streams every complaint as a downloadable CSV for reporting.
+
 ---
 
 ## 🔐 Security Notes
@@ -210,9 +320,9 @@ Electrical · IT/Network · Maintenance · Food/Mess · Security · Sanitation �
 
 ## 🚧 Future Enhancements
 Kept intentionally out of scope for now:
-- Duplicate complaint detection (text similarity)
-- Email / SMS notifications
-- Real-time notifications
+- Real-time notifications (WebSocket)
 - Staff/Department Officer role
-- Advanced SLA automation
+- Advanced SLA automation & reminders
 - Predictive analytics
+- Multi-tenant support (multiple colleges/institutions)
+- Image / attachment uploads for complaints
