@@ -1,4 +1,3 @@
-const API_URL = "http://localhost:5000/api";
 
 const complaintForm = document.getElementById("complaintForm");
 const titleInput = document.getElementById("title");

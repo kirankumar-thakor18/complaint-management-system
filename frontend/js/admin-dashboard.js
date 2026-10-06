@@ -1,4 +1,3 @@
-const API_URL = "http://localhost:5000/api";
 
 // ===== CHECK ADMIN ROLE =====
 function getUser() {

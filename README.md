@@ -115,21 +115,34 @@ assets/screenshots/
 ```
 complaint-management-system/
 ├── backend/
-│   └── backend/
-│       ├── config/
-│       │   └── slaConfig.js          # Centralized SLA hours per priority
-│       ├── services/
-│       │   ├── priorityService.js    # Rule-based priority detection
-│       │   ├── slaService.js         # SLA deadline + escalation logic
-│       │   ├── historyService.js     # Append-only history records
-│       │   └── emailService.js       # Nodemailer (SMTP) + dev console fallback
-│       ├── index.js                  # Express app, routes, auth, middleware
-│       ├── package.json
-│       └── db.json                   # Flat-file JSON database
+│   ├── config/
+│   │   ├── slaConfig.js              # Centralized SLA hours per priority
+│   │   └── constants.js              # Shared constants (e.g. statuses)
+│   ├── middleware/
+│   │   └── auth.js                   # JWT sign/verify + Bearer auth middleware
+│   ├── routes/
+│   │   ├── auth.js                   # Register, login, profile, password reset
+│   │   ├── complaints.js             # Create, list, view, history, feedback
+│   │   └── admin.js                  # Status/priority/assign, users, analytics, CSV
+│   ├── services/
+│   │   ├── priorityService.js        # Rule-based priority detection
+│   │   ├── slaService.js             # SLA deadline + escalation logic
+│   │   ├── historyService.js         # Append-only history records
+│   │   └── emailService.js           # Nodemailer (SMTP) + dev console fallback
+│   ├── utils/
+│   │   ├── handler.js                # Route wrapper: auth + serialized DB transaction
+│   │   └── helpers.js                # Shared helpers (ids, history migration, escaping)
+│   ├── tests/                        # node:test unit + API integration tests
+│   ├── app.js                        # Express app factory (used by index.js + tests)
+│   ├── index.js                      # Server entry point (seed + listen)
+│   ├── db.js                         # Atomic, serialized JSON file store
+│   ├── seed.js                       # Default admin seeding
+│   ├── package.json
+│   └── db.json                       # Flat-file JSON database
 ├── frontend/
 │   ├── *.html                        # Landing, auth, dashboard, profile, admin pages
 │   ├── css/style.css                 # Single stylesheet (responsive)
-│   └── js/                           # Page-specific logic + helpers
+│   └── js/                           # Page-specific logic + config.js (API base URL)
 └── .gitignore
 ```
 
@@ -142,15 +155,18 @@ complaint-management-system/
 
 ### 1. Install dependencies
 ```bash
-cd backend/backend
+cd backend
 npm install
 ```
 
 ### 2. Configure environment
-Create a `.env` file in `backend/backend/` (optional — defaults to port 5000):
+Create a `.env` file in `backend/` (optional — defaults shown):
 ```
 PORT=5000
+JWT_SECRET=a-long-random-secret
 ```
+
+> 🔑 `JWT_SECRET` signs login tokens. If omitted, an insecure development default is used (a warning is logged) — always set it in production.
 
 #### Email configuration (optional)
 By default, email notifications and password-reset links are **logged to the console** so the app works with zero setup in development. To send real emails, add your SMTP credentials to `.env`:
@@ -194,6 +210,19 @@ The backend auto-seeds an admin on first run:
 
 ## 🧪 Testing
 
+### Automated tests
+```bash
+cd backend
+npm test
+```
+Runs with Node's built-in test runner (`node --test`) — no extra dependencies. Covers:
+- **Services:** priority scoring, SLA deadlines/escalation, append-only history
+- **Database store:** atomic writes, concurrent read-modify-write loses no updates, failure recovery
+- **API end-to-end:** auth flow, role enforcement, complaint lifecycle, feedback rules, CSV export, and JWT validity across a server restart
+
+Tests run against an isolated temporary database — your real `db.json` is untouched.
+
+### Manual walkthrough
 Register a user (or use the default admin) via the UI, submit a complaint, and observe:
 
 - **Priority preview** live-updates as you type
@@ -225,7 +254,7 @@ Invoke-RestMethod -Uri http://localhost:5000/api/admin/analytics -Headers $h
 | POST   | `/api/auth/register`     | No   | Register a user      |
 | POST   | `/api/auth/login`        | No   | Login                |
 | GET    | `/api/auth/me`           | Yes  | Current user         |
-| POST   | `/api/auth/logout`       | Yes  | Invalidate token     |
+| POST   | `/api/auth/logout`       | Yes  | Client discards its JWT (tokens are stateless) |
 | POST   | `/api/auth/forgot-password` | No | Send reset email (returns `devResetLink` in dev mode) |
 | POST   | `/api/auth/reset-password` | No | Set new password with a valid token |
 
@@ -290,7 +319,7 @@ Invoke-RestMethod -Uri http://localhost:5000/api/admin/analytics -Headers $h
 `historyService.addHistory()` appends records to `complaint.history`. It only ever appends — never edits or removes — keeping a trustworthy audit trail.
 
 **Email Notifications & Password Reset:**
-`emailService.js` wraps Nodemailer with HTTPS-safe transport and a JSON payload. If SMTP is configured in `.env` it sends real email; otherwise it logs to the console (dev mode) and returns a `devResetLink`. Password-reset tokens are 64-char random hex, stored in-memory with a **30-minute expiry**, and are single-use.
+`emailService.js` wraps Nodemailer with HTTPS-safe transport and a JSON payload. If SMTP is configured in `.env` it sends real email; otherwise it logs to the console (dev mode) and returns a `devResetLink`. Password-reset tokens are 64-char random hex, persisted in `db.json` (so they survive server restarts) with a **30-minute expiry**, and are single-use.
 
 **Duplicate Detection:**
 `POST /api/complaints` compares the new complaint against the user's existing ones using word-overlap similarity (Jaccard-style). If similarity ≥ 0.7 it is flagged as a duplicate and returned so the UI can warn with links.
@@ -302,10 +331,12 @@ Invoke-RestMethod -Uri http://localhost:5000/api/admin/analytics -Headers $h
 
 ## 🔐 Security Notes
 - Passwords hashed with **bcrypt**
-- Token-based auth (custom in-memory tokens)
+- Stateless **JWT** auth (7-day expiry) — sessions survive server restarts; secret configured via `JWT_SECRET`
+- Role checks run against fresh DB data on every request
 - Role checks on all admin routes
 - Users can only access **their own** complaints (backend-enforced)
 - Backend validation on all inputs; no raw DB errors exposed
+- `db.json` writes are atomic (temp file + rename) and serialized, so concurrent requests can't corrupt or lose data
 - Secrets excluded via `.gitignore` (`.env`, `node_modules`)
 
 ---

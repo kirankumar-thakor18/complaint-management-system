@@ -4,6 +4,9 @@ node_modules/
 # Environment / secrets
 .env
 
+# Database temp files (atomic writes)
+*.tmp
+
 # Logs
 *.log
 npm-debug.log*
@@ -11,6 +14,3 @@ npm-debug.log*
 # OS files
 .DS_Store
 Thumbs.db
-
-# Stale/orphaned backend (old iteration, not part of the active app)
-backend/node_modules/

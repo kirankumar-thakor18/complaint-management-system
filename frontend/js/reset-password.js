@@ -1,4 +1,3 @@
-const API_URL = "http://localhost:5000/api";
 
 const urlParams = new URLSearchParams(window.location.search);
 const token = urlParams.get("token");

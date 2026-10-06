@@ -1,4 +1,3 @@
-const API_URL = "http://localhost:5000/api";
 
 const forgotForm = document.getElementById("forgotForm");
 const email = document.getElementById("email");

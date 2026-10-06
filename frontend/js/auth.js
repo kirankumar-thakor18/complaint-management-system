@@ -1,4 +1,3 @@
-const API_URL = "http://localhost:5000/api";
 
 // ===== LOGIN TAB SWITCH (User / Admin) =====
 let selectedTab = "user";

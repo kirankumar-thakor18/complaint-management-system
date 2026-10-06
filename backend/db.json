@@ -37,7 +37,7 @@
       "userId": 2,
       "assignedTo": null,
       "slaDeadline": "2026-09-05T16:10:26.132Z",
-      "escalated": false,
+      "escalated": true,
       "createdAt": "2026-09-02T16:10:26.132Z",
       "updatedAt": "2026-09-04T07:06:46.639Z",
       "resolvedAt": "2026-09-04T07:06:32.967Z",
@@ -101,6 +101,18 @@
           },
           "comment": "Restored during testing",
           "timestamp": "2026-09-04T07:06:46.639Z"
+        },
+        {
+          "action": "escalated",
+          "previousValue": null,
+          "newValue": "true",
+          "performedBy": {
+            "id": null,
+            "name": "System",
+            "role": "system"
+          },
+          "comment": "SLA deadline exceeded — complaint escalated automatically.",
+          "timestamp": "2026-10-06T17:05:34.256Z"
         }
       ]
     },
@@ -159,5 +171,6 @@
       ]
     }
   ],
-  "feedback": []
+  "feedback": [],
+  "resetTokens": []
 }

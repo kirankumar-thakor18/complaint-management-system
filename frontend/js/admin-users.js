@@ -1,4 +1,3 @@
-const API_URL = "http://localhost:5000/api";
 
 function getUser() { try { return JSON.parse(localStorage.getItem("user")); } catch (e) { return null; } }
 
