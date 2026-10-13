@@ -20,18 +20,41 @@ A full-stack, portfolio-quality **Complaint Management System** — rules-based 
 
 ---
 
+> 🔗 **Live Demo:** https://complaint-management-system-2685.onrender.com
+
+---
+
 ## 📸 Screenshots
 
-> Add screenshots here (`assets/screenshots/login.png`, `dashboard.png`, `admin-dashboard.png`) to showcase the UI.
+### 🏠 Landing & Auth
 
-```
-assets/screenshots/
-├── login.png            # Login with User/Admin tabs
-├── user-dashboard.png   # User's complaint dashboard
-├── admin-dashboard.png  # Admin analytics dashboard
-├── track.png            # Complaint timeline & SLA view
-└── profile.png          # User profile / change password
-```
+| Landing | Login |
+|:-:|:-:|
+| ![Landing](assets/screenshots/01-landing.png) | ![Login](assets/screenshots/02-login.png) |
+
+| Register | Forgot Password |
+|:-:|:-:|
+| ![Register](assets/screenshots/03-register.png) | ![Forgot Password](assets/screenshots/04-forgot-password.png) |
+
+### 👤 User
+
+| Dashboard | Submit Complaint |
+|:-:|:-:|
+| ![User Dashboard](assets/screenshots/05-user-dashboard.png) | ![Submit Complaint](assets/screenshots/06-submit-complaint.png) |
+
+| Track Complaint | Profile |
+|:-:|:-:|
+| ![Track Complaint](assets/screenshots/07-track-complaint.png) | ![Profile](assets/screenshots/11-profile.png) |
+
+### 🛠️ Admin
+
+| Analytics Dashboard | Manage Complaints |
+|:-:|:-:|
+| ![Admin Dashboard](assets/screenshots/08-admin-dashboard.png) | ![Manage Complaints](assets/screenshots/09-admin-complaints.png) |
+
+| Manage Users | |
+|:-:|:-:|
+| ![Manage Users](assets/screenshots/10-admin-users.png) | |
 
 ---
 
