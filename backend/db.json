@@ -23,6 +23,14 @@
       "password": "$2b$10$Cow8zktSYqbBq6/3kBm9beaeEHFUkKFkWJV1JyRah4XXxbb8jHngu",
       "role": "user",
       "createdAt": "2026-09-04T06:33:32.434Z"
+    },
+    {
+      "id": 4,
+      "name": "Demo Student",
+      "email": "demo.student@college.edu",
+      "password": "$2b$10$ULMfkx7T078XvHE1qhuml.QxDj6nM5/SKpWCGVv0OSkRzEhwRYLlW",
+      "role": "user",
+      "createdAt": "2026-10-06T18:08:58.767Z"
     }
   ],
   "complaints": [
@@ -167,6 +175,36 @@
           },
           "comment": "Complaint resolved.",
           "timestamp": "2026-09-04T06:39:25.845Z"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Urgent water leak near electrical panel in Block C",
+      "category": "Electrical",
+      "description": "Severe water leak dripping onto the electrical panel. Immediate attention required to avoid a dangerous short circuit.",
+      "suggestedPriority": "Critical",
+      "priority": "Critical",
+      "status": "Pending",
+      "userId": 4,
+      "assignedTo": null,
+      "slaDeadline": "2026-10-06T22:09:20.517Z",
+      "escalated": false,
+      "createdAt": "2026-10-06T18:09:20.517Z",
+      "updatedAt": "2026-10-06T18:09:20.517Z",
+      "resolvedAt": null,
+      "history": [
+        {
+          "action": "created",
+          "previousValue": null,
+          "newValue": "Pending",
+          "performedBy": {
+            "id": 4,
+            "name": "Demo Student",
+            "role": "user"
+          },
+          "comment": "Complaint submitted.",
+          "timestamp": "2026-10-06T18:09:20.518Z"
         }
       ]
     }
